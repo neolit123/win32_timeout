@@ -1,7 +1,7 @@
 win32_timeout
 last revised 16.02.2017
 
-a couple of Win32 console application to perform an action after a specific
+a couple of Win32 console applications that perform an action after a specific
 amount of time. the source code is ANSI C compatible.
 
 shutdown_timeout:
