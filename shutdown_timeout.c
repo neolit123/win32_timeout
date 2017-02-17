@@ -14,7 +14,6 @@
 
 #include <stdio.h>
 #include <signal.h>
-#include <stdatomic.h>
 #include <windows.h>
 #include <timeout_utils.h>
 
@@ -37,14 +36,13 @@ static BOOL EnableShutdownPrivileges()
 }
 
 static WORD consoleAttributes;
-
-static atomic_int keepRunning = ATOMIC_VAR_INIT(1);
+static LONG keepRunning;
 
 static void signalHandler(int signal)
 {
 	(void)signal;
 	printfColor(FCOLOR_RED, BCOLOR_NULL, "\nctrl+c triggered!\n");
-	keepRunning = 0;
+	InterlockedExchange(&keepRunning, 0);
 }
 
 int main(void)
@@ -56,6 +54,8 @@ int main(void)
 	const FTYPE thread_tick_ms = 100;
 	const FTYPE shutdown_timeout_seconds = 30, shutdown_timeout_ms = shutdown_timeout_seconds * 1000;
 	FTYPE remaining_minutes = 0, progress_percent = 0, last_ms_passed = 0, ms_passed = 0, ms_user = 0;
+
+	InterlockedExchange(&keepRunning, 1);
 
 	saveConsoleAttributes(&consoleAttributes);
 	printfColor(FCOLOR_YELLOW, BCOLOR_NULL, "\n[*] shutdown timeout!\n");
@@ -71,13 +71,13 @@ int main(void)
 	}
 
 	/* obtain the timeout from the user */
-	while (keepRunning && !ms_user) {
+	while (InterlockedExchangeAdd(&keepRunning, 0) && !ms_user) {
 		printfColor(FCOLOR_WHITE, BCOLOR_NULL, "\nhow many minutes until shutdown?: ");
 		fseek(stdin, 0, SEEK_END); /* skip eveything in stdin */
 		scanf_result = scanf("%lf", &ms_user);
 		ms_user *= 1000 * 60;
 		Sleep((DWORD)thread_tick_ms);
-		if (!keepRunning)
+		if (!InterlockedExchangeAdd(&keepRunning, 0))
 			break;
 		if (scanf_result <= 0 || ms_user <= 0) {
 			printf("\ninvalid input, try again!\n");
@@ -85,7 +85,7 @@ int main(void)
 		}
 	}
 
-	if (!keepRunning)
+	if (!InterlockedExchangeAdd(&keepRunning, 0))
 		goto exit;
 
 	/*  show a console message that the shutdown will start in N minutes */
@@ -93,7 +93,7 @@ int main(void)
 		msg_shutdown_format, ms_user / 1000 / 60, "minute");
 	printfColor(FCOLOR_CYAN, BCOLOR_NULL, "%s...\n\n", msg_buffer);
 
-	while (keepRunning) {
+	while (InterlockedExchangeAdd(&keepRunning, 0)) {
 		if (ms_passed >= ms_user - shutdown_timeout_ms) {
 
 			/* enough time has passed, show message and initiate shutdown */
@@ -115,7 +115,7 @@ int main(void)
 		}
 
 		Sleep((DWORD)thread_tick_ms);
-		if (!keepRunning)
+		if (!InterlockedExchangeAdd(&keepRunning, 0))
 			break;
 		ms_passed += thread_tick_ms;
 		/* only show a message once 1 minute has passed */
