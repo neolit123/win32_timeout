@@ -28,4 +28,4 @@ $(OBJ)/timeout_utils.o: timeout_utils.c timeout_utils.h
 
 clean:
 	@echo clean
-	@rm $(OBJ)/*.o $(BIN)/*.exe > NUL 2>&1
+	@rm -f $(OBJ)/*.o $(BIN)/*.exe > NUL 2>&1
