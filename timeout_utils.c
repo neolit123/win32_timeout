@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
-#include <windows.h>
 #include <timeout_utils.h>
 
 /* a wrapper for printf() that supports foreground and background colors */

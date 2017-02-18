@@ -14,7 +14,6 @@
 
 #include <stdio.h>
 #include <signal.h>
-#include <windows.h>
 #include <timeout_utils.h>
 
 /* set to 0 to disable the popup window */

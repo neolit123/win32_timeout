@@ -1,6 +1,8 @@
 #ifndef TIMEOUT_UTILS_H
 #define TIMEOUT_UTILS_H
 
+#include <windows.h>
+
 /* support printing in color */
 typedef enum {
 

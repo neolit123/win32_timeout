@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include <signal.h>
-#include <windows.h>
 #include <timeout_utils.h>
 
 static WORD consoleAttributes;
