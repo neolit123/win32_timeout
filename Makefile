@@ -1,8 +1,10 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -ansi -pedantic -I.
-LDFLAGS=
 BIN=./bin
 OBJ=./obj
+SRC=./src
+
+CC=gcc
+CFLAGS=-Wall -Wextra -ansi -pedantic -I$(SRC)
+LDFLAGS=
 
 ALL: $(BIN)/alarm_timeout.exe $(BIN)/shutdown_timeout.exe
 
@@ -14,17 +16,17 @@ $(BIN)/shutdown_timeout.exe: $(OBJ)/shutdown_timeout.o $(OBJ)/timeout_utils.o
 	@echo $@
 	@$(CC) $(OBJ)/shutdown_timeout.o $(OBJ)/timeout_utils.o -o $@ $(LDFLAGS)
 
-$(OBJ)/alarm_timeout.o : alarm_timeout.c timeout_utils.h
+$(OBJ)/alarm_timeout.o : $(SRC)/alarm_timeout.c $(SRC)/timeout_utils.h
 	@echo $@
-	@$(CC) -c $(CFLAGS) alarm_timeout.c -o $@
+	@$(CC) -c $(CFLAGS) $(SRC)/alarm_timeout.c -o $@
 
-$(OBJ)/shutdown_timeout.o : shutdown_timeout.c timeout_utils.h
+$(OBJ)/shutdown_timeout.o : $(SRC)/shutdown_timeout.c $(SRC)/timeout_utils.h
 	@echo $@
-	@$(CC) -c $(CFLAGS) shutdown_timeout.c -o $@
+	@$(CC) -c $(CFLAGS) $(SRC)/shutdown_timeout.c -o $@
 
-$(OBJ)/timeout_utils.o: timeout_utils.c timeout_utils.h
+$(OBJ)/timeout_utils.o: $(SRC)/timeout_utils.c $(SRC)/timeout_utils.h
 	@echo $@
-	@$(CC) -c $(CFLAGS) timeout_utils.c -o $@
+	@$(CC) -c $(CFLAGS) $(SRC)/timeout_utils.c -o $@
 
 clean:
 	@echo clean
