@@ -44,12 +44,12 @@ typedef enum {
 
 } ConsoleColor;
 
-extern void printfColor(ConsoleColor foreground, ConsoleColor background, const char *format, ...);
-extern void saveConsoleAttributes(WORD *attributes);
-extern void loadConsoleAttributes(WORD attributes);
+void printfColor(ConsoleColor foreground, ConsoleColor background, const char *format, ...);
+void saveConsoleAttributes(WORD *attributes);
+void loadConsoleAttributes(WORD attributes);
 
 #define FTYPE double
 
-extern FTYPE roundLocal(FTYPE x);
+FTYPE roundLocal(FTYPE x);
 
 #endif
