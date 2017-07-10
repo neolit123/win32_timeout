@@ -1,8 +1,8 @@
 win32_timeout
 last revised 10.07.2017
 
-a couple of Win32 console applications that perform an action after a specific
-amount of time. the source code is ANSI C compatible.
+a collection of small Win32 console applications that perform an action after
+a specific amount of time or if certain conditions are met.
 
 shutdown_timeout:
 	shuts down the system after N minutes. gives a 30 second countdown.
@@ -11,8 +11,8 @@ alarm_timeout:
 	plays alarm_timeout.wav on a loop after N minutes.
 
 ping_timeout:
-	play a sound and show a message box after succeeding to ICMP echo an
-	IPV4 address.
+	plays ping_timeout.wav and shows a message box after succeeding
+	to ICMP echo an	IPV4 address.
 
 use Mingw and GNU Make to build:
 	cd <source_path>
