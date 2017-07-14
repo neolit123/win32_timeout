@@ -4,8 +4,8 @@
  * (c) 2017, neolit123 [at] gmail
  * this program is released in the public domain without warranty of any kind!
  *
- * a small Windows console application that will play a sound and show
- * a message box after succeeding to ICMP echo an IPV4 address.
+ * a small Windows console application that will play a sound after succeeding
+ * to ICMP echo an IPV4 address.
  *
  * the program can be aborted with CTRL+C.
 */
@@ -19,8 +19,8 @@
 
 #include <timeout_utils.h>
 
-#define SHOW_MESSAGE  1
-#define ONE_SECOND_MS 1000
+#define IP_ADDRESS      "216.58.212.46"
+#define ONE_SECOND_MS   1000
 
 static WORD consoleAttributes;
 static LONG keepRunning;
@@ -49,12 +49,9 @@ int main(int argc, char **argv)
 	LPVOID replyBuffer = NULL;
 	DWORD replySize = 0;
 	PICMP_ECHO_REPLY echoReply;
-	LONG time_sec_local = 0;
+	LONG time_sec_local = 0, last_suc_time = 0;
 
-	char ip[128] = "216.58.212.46"; /* google.com */
-	char buf_suc_status[128];
-	char buf_suc_time[128];
-	char buf_message_box[256];
+	char ip[128] = IP_ADDRESS;
 	char sendData[32] = "data";
 	unsigned long ipAddr = INADDR_NONE;
 	unsigned int ipLen;
@@ -113,29 +110,29 @@ int main(int argc, char **argv)
 	while (InterlockedExchangeAdd(&keepRunning, 0)) {
 		time_sec_local = InterlockedExchangeAdd(&timeSec, 0);
 
+		memset(replyBuffer, 0, replySize);
 		retVal = IcmpSendEcho(hIcmpFile, ipAddr, sendData, sizeof(sendData),
 			NULL, replyBuffer, replySize, ONE_SECOND_MS);
 
-		if (retVal != 0) {
-			echoReply = (PICMP_ECHO_REPLY)replyBuffer;
-			InterlockedExchange(&keepRunning, 0);
+		if (!InterlockedExchangeAdd(&keepRunning, 0)) /* ctrl + c was pressed */
+			break;
 
-			snprintf(buf_suc_status, sizeof(buf_suc_status), "status: %ld; ping: %ld ms", echoReply->Status, echoReply->RoundTripTime);
-			snprintf(buf_suc_time, sizeof(buf_suc_time), "succeeded after %u min %u sec", time_sec_local / 60, time_sec_local % 60);
-			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "%s\n", buf_suc_status);
-			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "%s\n", buf_suc_time);
+		echoReply = (PICMP_ECHO_REPLY)replyBuffer;
+
+		if (retVal != 0 && echoReply->Status == IP_SUCCESS) {
+
+			if (!last_suc_time)
+				last_suc_time = time_sec_local;
+
+			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "success; time: %u min %u sec; ping: %ld ms\n",
+				last_suc_time / 60, last_suc_time % 60, echoReply->RoundTripTime);
 
 			PlaySound("ping_timeout.wav", NULL, SND_FILENAME);
-			snprintf(buf_message_box, sizeof(buf_message_box), "%s\n%s", buf_suc_status, buf_suc_time);
-#ifdef SHOW_MESSAGE
-			MessageBox(NULL, buf_message_box, "[*] ping timeout success", MB_ICONINFORMATION);
-#else
-			getchar();
-#endif
-			break;
+
 		} else {
-			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed with error: %ld; time spent: %u min %u sec\n",
-				GetLastError(), time_sec_local / 60, time_sec_local % 60);
+			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed; error: %ld; status: %ld; time spent: %u min %u sec\n",
+				GetLastError(), echoReply->Status, time_sec_local / 60, time_sec_local % 60);
+			last_suc_time = 0;
 		}
 		Sleep(ONE_SECOND_MS);
 	}
