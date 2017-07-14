@@ -15,11 +15,15 @@
 #include <iphlpapi.h>
 #include <icmpapi.h>
 #include <signal.h>
+#include <process.h>
 
 #include <timeout_utils.h>
 
+#define ONE_SECOND_MS 1000
+
 static WORD consoleAttributes;
 static LONG keepRunning;
+static LONG timeSec;
 
 static void signalHandler(int signal)
 {
@@ -28,15 +32,23 @@ static void signalHandler(int signal)
 	InterlockedExchange(&keepRunning, 0);
 }
 
-int main(int argc, char **argv)  {
+static void timer(void *param)
+{
+	(void)param;
+	while (InterlockedExchangeAdd(&keepRunning, 0)) {
+		InterlockedExchangeAdd(&timeSec, 1);
+		Sleep(ONE_SECOND_MS);
+	}
+}
 
-	const unsigned int timeout_ms = 1000;
-
+int main(int argc, char **argv)
+{
 	HANDLE hIcmpFile;
 	DWORD retVal = 0;
 	LPVOID replyBuffer = NULL;
 	DWORD replySize = 0;
 	PICMP_ECHO_REPLY echoReply;
+	LONG time_sec_local = 0;
 
 	char ip[128] = "216.58.212.46"; /* google.com */
 	char buf_suc_status[128];
@@ -45,8 +57,6 @@ int main(int argc, char **argv)  {
 	char sendData[32] = "data";
 	unsigned long ipAddr = INADDR_NONE;
 	unsigned int ipLen;
-	unsigned int attempts = 0;
-	unsigned int time_sec;
 	int ret = 0;
 
 	/* check IP from command line */
@@ -59,7 +69,10 @@ int main(int argc, char **argv)  {
 	}
 
 	InterlockedExchange(&keepRunning, 1);
+	InterlockedExchange(&timeSec, 0);
 	saveConsoleAttributes(&consoleAttributes);
+
+	_beginthread(timer, 0, NULL);
 
 	/* setup a CTRL+C handler */
  	signal(SIGINT, signalHandler);
@@ -97,17 +110,17 @@ int main(int argc, char **argv)  {
 	printfColor(FCOLOR_CYAN, BCOLOR_NULL, "\nechoing %s with %d bytes of data\n\n", ip, sizeof(sendData));
 
 	while (InterlockedExchangeAdd(&keepRunning, 0)) {
-		attempts++;
-		time_sec = attempts * (timeout_ms / 1000);
+		time_sec_local = InterlockedExchangeAdd(&timeSec, 0);
 
 		retVal = IcmpSendEcho(hIcmpFile, ipAddr, sendData, sizeof(sendData),
-			NULL, replyBuffer, replySize, timeout_ms);
+			NULL, replyBuffer, replySize, ONE_SECOND_MS);
 
 		if (retVal != 0) {
 			echoReply = (PICMP_ECHO_REPLY)replyBuffer;
+			InterlockedExchange(&keepRunning, 0);
 
 			snprintf(buf_suc_status, sizeof(buf_suc_status), "status: %ld; ping: %ld ms", echoReply->Status, echoReply->RoundTripTime);
-			snprintf(buf_suc_time, sizeof(buf_suc_time), "succeeded after %u min %u sec", time_sec / 60, time_sec % 60);
+			snprintf(buf_suc_time, sizeof(buf_suc_time), "succeeded after %u min %u sec", time_sec_local / 60, time_sec_local % 60);
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "%s\n", buf_suc_status);
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "%s\n", buf_suc_time);
 
@@ -118,9 +131,9 @@ int main(int argc, char **argv)  {
 			break;
 		} else {
 			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed with error: %ld; time spent: %u min %u sec\n",
-				GetLastError(), time_sec / 60, time_sec % 60);
+				GetLastError(), time_sec_local / 60, time_sec_local % 60);
 		}
-		Sleep(timeout_ms);
+		Sleep(ONE_SECOND_MS);
 	}
 
 	free(replyBuffer);
