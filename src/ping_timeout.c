@@ -19,6 +19,7 @@
 
 #include <timeout_utils.h>
 
+#define SHOW_MESSAGE  1
 #define ONE_SECOND_MS 1000
 
 static WORD consoleAttributes;
@@ -126,8 +127,11 @@ int main(int argc, char **argv)
 
 			PlaySound("ping_timeout.wav", NULL, SND_FILENAME);
 			snprintf(buf_message_box, sizeof(buf_message_box), "%s\n%s", buf_suc_status, buf_suc_time);
+#ifdef SHOW_MESSAGE
 			MessageBox(NULL, buf_message_box, "[*] ping timeout success", MB_ICONINFORMATION);
-
+#else
+			getchar();
+#endif
 			break;
 		} else {
 			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed with error: %ld; time spent: %u min %u sec\n",
