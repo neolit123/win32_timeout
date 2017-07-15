@@ -20,6 +20,7 @@
 #include <timeout_utils.h>
 
 #define IP_ADDRESS      "216.58.212.46"
+#define SOUND_FILE      "ping_timeout.wav"
 #define ONE_SECOND_MS   1000
 
 static WORD consoleAttributes;
@@ -124,7 +125,8 @@ int main(int argc, char **argv)
 
 			if (!last_suc_time) {
 				last_suc_time = time_sec_local;
-				PlaySound("ping_timeout.wav", NULL, SND_FILENAME);
+				PlaySound(NULL, 0, 0);
+				PlaySound(SOUND_FILE, NULL, SND_FILENAME | SND_ASYNC);
 			}
 
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "success; time: %u min %u sec; ping: %ld ms\n",
