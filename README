@@ -11,7 +11,8 @@ alarm_timeout:
 	plays alarm_timeout.wav on a loop after N minutes.
 
 ping_timeout:
-	plays ping_timeout.wav after succeeding	to ICMP echo an	IPV4 address.
+	plays a success or an error sound after trying to continuously ICMP
+	echo an IPV4 address.
 
 use Mingw and GNU Make to build:
 	cd <source_path>

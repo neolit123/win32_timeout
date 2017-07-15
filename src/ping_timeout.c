@@ -5,7 +5,7 @@
  * this program is released in the public domain without warranty of any kind!
  *
  * a small Windows console application that will play a sound after succeeding
- * to ICMP echo an IPV4 address.
+ * or failing to ICMP echo an IPV4 address.
  *
  * the program can be aborted with CTRL+C.
 */
@@ -19,9 +19,10 @@
 
 #include <timeout_utils.h>
 
-#define IP_ADDRESS      "216.58.212.46"
-#define SOUND_FILE      "ping_timeout.wav"
-#define ONE_SECOND_MS   1000
+#define IP_ADDRESS              "216.58.212.46"
+#define SOUND_FILE_SUCCESS      "ping_timeout_success.wav"
+#define SOUND_FILE_ERROR        "ping_timeout_error.wav"
+#define ONE_SECOND_MS           1000
 
 static WORD consoleAttributes;
 static LONG keepRunning;
@@ -109,37 +110,34 @@ int main(int argc, char **argv)
 	printfColor(FCOLOR_CYAN, BCOLOR_NULL, "\nechoing %s with %d bytes of data\n\n", ip, sizeof(sendData));
 
 	while (InterlockedExchangeAdd(&keepRunning, 0)) {
-
 		memset(replyBuffer, 0, replySize);
 		retVal = IcmpSendEcho(hIcmpFile, ipAddr, sendData, sizeof(sendData),
 			NULL, replyBuffer, replySize, ONE_SECOND_MS);
+		echoReply = (PICMP_ECHO_REPLY)replyBuffer;
 
 		time_sec_local = InterlockedExchangeAdd(&timeSec, 0);
-
 		if (!InterlockedExchangeAdd(&keepRunning, 0)) /* ctrl + c was pressed */
 			break;
 
-		echoReply = (PICMP_ECHO_REPLY)replyBuffer;
-
 		if (retVal != 0 && echoReply->Status == IP_SUCCESS) {
-
 			if (!last_suc_time) {
 				last_suc_time = time_sec_local;
 				PlaySound(NULL, 0, 0);
-				PlaySound(SOUND_FILE, NULL, SND_FILENAME | SND_ASYNC);
+				PlaySound(SOUND_FILE_SUCCESS, NULL, SND_FILENAME | SND_ASYNC);
 			}
-
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "success; time: %u min %u sec; ping: %ld ms\n",
 				last_suc_time / 60, last_suc_time % 60, echoReply->RoundTripTime);
-
 		} else {
 			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed; error: %ld; status: %ld; time spent: %u min %u sec\n",
 				GetLastError(), echoReply->Status, time_sec_local / 60, time_sec_local % 60);
-			last_suc_time = 0;
+			if (last_suc_time) {
+				PlaySound(NULL, 0, 0);
+				PlaySound(SOUND_FILE_ERROR, NULL, SND_FILENAME | SND_ASYNC);
+				last_suc_time = 0;
+			}
 		}
 		Sleep(ONE_SECOND_MS);
 	}
-
 	free(replyBuffer);
 
 exit_handle:
