@@ -121,13 +121,13 @@ int main(int argc, char **argv)
 
 		if (retVal != 0 && echoReply->Status == IP_SUCCESS) {
 
-			if (!last_suc_time)
+			if (!last_suc_time) {
 				last_suc_time = time_sec_local;
+				PlaySound("ping_timeout.wav", NULL, SND_FILENAME);
+			}
 
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "success; time: %u min %u sec; ping: %ld ms\n",
 				last_suc_time / 60, last_suc_time % 60, echoReply->RoundTripTime);
-
-			PlaySound("ping_timeout.wav", NULL, SND_FILENAME);
 
 		} else {
 			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed; error: %ld; status: %ld; time spent: %u min %u sec\n",
