@@ -108,11 +108,12 @@ int main(int argc, char **argv)
 	printfColor(FCOLOR_CYAN, BCOLOR_NULL, "\nechoing %s with %d bytes of data\n\n", ip, sizeof(sendData));
 
 	while (InterlockedExchangeAdd(&keepRunning, 0)) {
-		time_sec_local = InterlockedExchangeAdd(&timeSec, 0);
 
 		memset(replyBuffer, 0, replySize);
 		retVal = IcmpSendEcho(hIcmpFile, ipAddr, sendData, sizeof(sendData),
 			NULL, replyBuffer, replySize, ONE_SECOND_MS);
+
+		time_sec_local = InterlockedExchangeAdd(&timeSec, 0);
 
 		if (!InterlockedExchangeAdd(&keepRunning, 0)) /* ctrl + c was pressed */
 			break;
