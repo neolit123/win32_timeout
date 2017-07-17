@@ -28,6 +28,8 @@ static WORD consoleAttributes;
 static LONG keepRunning;
 static LONG timeSec;
 
+enum STATE_SWITCH { ST_SUCCESS, ST_ERROR, ST_NONE };
+
 static void signalHandler(int signal)
 {
 	(void)signal;
@@ -57,6 +59,7 @@ int main(int argc, char **argv)
 	char sendData[32] = "data";
 	unsigned long ipAddr = INADDR_NONE;
 	unsigned int ipLen;
+	enum STATE_SWITCH current_state = ST_NONE;
 	int ret = 0;
 
 	/* check IP from command line */
@@ -120,20 +123,21 @@ int main(int argc, char **argv)
 			break;
 
 		if (retVal != 0 && echoReply->Status == IP_SUCCESS) {
-			if (!last_suc_time) {
-				last_suc_time = time_sec_local;
+			if (current_state != ST_SUCCESS) {
+				current_state = ST_SUCCESS;
 				PlaySound(NULL, 0, 0);
 				PlaySound(SOUND_FILE_SUCCESS, NULL, SND_FILENAME | SND_ASYNC);
+				last_suc_time = time_sec_local;
 			}
 			printfColor(FCOLOR_GREEN, BCOLOR_NULL, "success; time: %u min %u sec; ping: %ld ms\n",
 				last_suc_time / 60, last_suc_time % 60, echoReply->RoundTripTime);
 		} else {
 			printfColor(FCOLOR_GRAY, BCOLOR_NULL, "failed; error: %ld; status: %ld; time spent: %u min %u sec\n",
 				GetLastError(), echoReply->Status, time_sec_local / 60, time_sec_local % 60);
-			if (last_suc_time) {
+			if (current_state != ST_ERROR) {
+				current_state = ST_ERROR;
 				PlaySound(NULL, 0, 0);
 				PlaySound(SOUND_FILE_ERROR, NULL, SND_FILENAME | SND_ASYNC);
-				last_suc_time = 0;
 			}
 		}
 		Sleep(ONE_SECOND_MS);
