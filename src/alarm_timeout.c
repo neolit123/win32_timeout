@@ -14,7 +14,6 @@
 #include <signal.h>
 #include <timeout_utils.h>
 
-static WORD consoleAttributes;
 static LONG keepRunning;
 
 static void signalHandler(int signal)
@@ -41,7 +40,7 @@ int main(void)
 
 	InterlockedExchange(&keepRunning, 1);
 
-	saveConsoleAttributes(&consoleAttributes);
+	saveConsoleAttributes();
 	setExecutionState();
 	printfColor(FCOLOR_YELLOW, BCOLOR_NULL, "\n[*] alarm timeout!\n");
 
@@ -105,7 +104,7 @@ int main(void)
 
 exit:
 	printf("\nexiting...\n");
-	loadConsoleAttributes(consoleAttributes);
+	loadConsoleAttributes();
 	restoreExecutionState();
 	return 0;
 }

@@ -30,20 +30,20 @@ void printfColor(ConsoleColor foreground, ConsoleColor background, const char *f
 }
 
 
-void saveConsoleAttributes(WORD *attributes)
+void saveConsoleAttributes(void)
 {
 	HANDLE hConsole;
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-	*attributes = consoleInfo.wAttributes;
+	console_attributes = consoleInfo.wAttributes;
 }
 
-void loadConsoleAttributes(WORD attributes)
+void loadConsoleAttributes(void)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(hConsole, attributes);
+	SetConsoleTextAttribute(hConsole, console_attributes);
 }
 
 void setExecutionState(void)

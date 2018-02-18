@@ -45,11 +45,12 @@ typedef enum {
 } ConsoleColor;
 
 void printfColor(ConsoleColor foreground, ConsoleColor background, const char *format, ...);
-void saveConsoleAttributes(WORD *attributes);
-void loadConsoleAttributes(WORD attributes);
+void saveConsoleAttributes(void);
+void loadConsoleAttributes(void);
 void setExecutionState(void);
 void restoreExecutionState(void);
 
+WORD console_attributes;
 EXECUTION_STATE execution_state;
 
 #define FTYPE double

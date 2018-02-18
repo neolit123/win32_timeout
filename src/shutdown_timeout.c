@@ -34,7 +34,6 @@ static BOOL EnableShutdownPrivileges()
 	return AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, 0);
 }
 
-static WORD consoleAttributes;
 static LONG keepRunning;
 
 static void signalHandler(int signal)
@@ -56,7 +55,7 @@ int main(void)
 
 	InterlockedExchange(&keepRunning, 1);
 
-	saveConsoleAttributes(&consoleAttributes);
+	saveConsoleAttributes();
 	setExecutionState();
 	printfColor(FCOLOR_YELLOW, BCOLOR_NULL, "\n[*] shutdown timeout!\n");
 
@@ -130,7 +129,7 @@ int main(void)
 
 exit:
 	printf("\nexiting...\n");
-	loadConsoleAttributes(consoleAttributes);
+	loadConsoleAttributes();
 	restoreExecutionState();
 	return 0;
 }

@@ -24,7 +24,6 @@
 #define SOUND_FILE_ERROR        "ping_timeout_error.wav"
 #define ONE_SECOND_MS           1000
 
-static WORD consoleAttributes;
 static LONG keepRunning;
 static LONG timeSec;
 
@@ -73,7 +72,7 @@ int main(int argc, char **argv)
 
 	InterlockedExchange(&keepRunning, 1);
 	InterlockedExchange(&timeSec, 0);
-	saveConsoleAttributes(&consoleAttributes);
+	saveConsoleAttributes();
 
 	_beginthread(timer, 0, NULL);
 
@@ -149,6 +148,6 @@ exit_handle:
 
 exit:
 	printf("exiting...\n");
-	loadConsoleAttributes(consoleAttributes);
+	loadConsoleAttributes();
 	return ret;
 }
