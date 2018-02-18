@@ -1,5 +1,5 @@
 win32_timeout
-last revised 10.07.2017
+last revised 18.02.2018
 
 a collection of small Win32 console applications that perform an action after
 a specific amount of time or if certain conditions are met.
