@@ -46,6 +46,16 @@ void loadConsoleAttributes(WORD attributes)
 	SetConsoleTextAttribute(hConsole, attributes);
 }
 
+void setExecutionState(void)
+{
+	execution_state = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+}
+
+void restoreExecutionState(void)
+{
+	SetThreadExecutionState(execution_state);
+}
+
 FTYPE roundLocal(FTYPE x)
 {
 	return x < 0 ? ceil(x - 0.5) : floor(x + 0.5);

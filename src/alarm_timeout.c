@@ -42,6 +42,7 @@ int main(void)
 	InterlockedExchange(&keepRunning, 1);
 
 	saveConsoleAttributes(&consoleAttributes);
+	setExecutionState();
 	printfColor(FCOLOR_YELLOW, BCOLOR_NULL, "\n[*] alarm timeout!\n");
 
 	/* setup a CTRL+C handler */
@@ -105,5 +106,6 @@ int main(void)
 exit:
 	printf("\nexiting...\n");
 	loadConsoleAttributes(consoleAttributes);
+	restoreExecutionState();
 	return 0;
 }
