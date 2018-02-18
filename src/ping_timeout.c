@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 
 	InterlockedExchange(&keepRunning, 1);
 	InterlockedExchange(&timeSec, 0);
-	saveConsoleAttributes();
+	storeConsoleAttributes();
 
 	_beginthread(timer, 0, NULL);
 
@@ -148,6 +148,6 @@ exit_handle:
 
 exit:
 	printf("exiting...\n");
-	loadConsoleAttributes();
+	restoreConsoleAttributes();
 	return ret;
 }

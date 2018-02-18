@@ -45,8 +45,8 @@ typedef enum {
 } ConsoleColor;
 
 void printfColor(ConsoleColor foreground, ConsoleColor background, const char *format, ...);
-void saveConsoleAttributes(void);
-void loadConsoleAttributes(void);
+void storeConsoleAttributes(void);
+void restoreConsoleAttributes(void);
 void setExecutionState(void);
 void restoreExecutionState(void);
 

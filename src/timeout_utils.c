@@ -30,7 +30,7 @@ void printfColor(ConsoleColor foreground, ConsoleColor background, const char *f
 }
 
 
-void saveConsoleAttributes(void)
+void storeConsoleAttributes(void)
 {
 	HANDLE hConsole;
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
@@ -40,7 +40,7 @@ void saveConsoleAttributes(void)
 	console_attributes = consoleInfo.wAttributes;
 }
 
-void loadConsoleAttributes(void)
+void restoreConsoleAttributes(void)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hConsole, console_attributes);
